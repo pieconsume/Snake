@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>Snake</title>
+  <style>
+   * { position: absolute; margin: 0px; border: none; background: none; padding: 0px; outline: none; }
+   div, input { border-style: solid; border-width: 2px; }
+   div { -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+   #settings > div { width: 50px; height: 20px; }
+   input { border: none; top: 0px; right: 0px; width: 32px; height: 20px; background: #404040; text-align: right; text-wrap: nowrap; -moz-appearance: textfield; }
+   input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; }
+   #snake       { border-color: #303030; }
+   #snake:focus { border-color: #606060; }
+   .tile { position: static; border-color: #181818; }
+   </style>
+  </head>
+ <body style="background: #000000;">
+  <div id="settings" style="top: 10px; left: 10px; width: 54px;  height: 120px; background: #404040; border-color: #202020;">
+   <div id="restart" style="background: #802020; border-color: #401010; text-align: center; top: 0px;" onclick="init()">Reset</div>
+   <div id="score"   style="background: #208020; border-color: #104010; text-align: center; top: 24px;">0</div>
+   <div id="width"   style="background: #404040; border-color: #282828; text-align: center; top: 48px; text-align: left;">W: <input id="widthin"  class="textbox" type="number" value="20"/></div>
+   <div id="height"  style="background: #404040; border-color: #282828; text-align: center; top: 72px; text-align: left;">H: <input id="heightin" class="textbox" type="number" value="20"/></div>
+   <div id="tilesz"  style="background: #404040; border-color: #282828; text-align: center; top: 96px; text-align: left;">S: <input id="tileszin"  class="textbox" type="number" value="15"/></div>
+   </div>
+  <div id="snake" style="top: 10px; left: 78px; background: #202020; display: grid;" tabindex="-1"></div>
+  </body>
+ <script>
+  let tickinterval, tickrate, width, height, tilesz, snakebody, length, food, direction;
+  let tiledivs = snake.getElementsByTagName("div");
+  snake.addEventListener("keydown", onkeydown);
+  snake.addEventListener("focus", () => { tickinterval = setInterval(tick, 200); });
+  snake.addEventListener("blur",  () => { clearInterval(tickinterval); });
+  init();
+  function init(){
+   width  = parseInt(widthin.value);
+   height = parseInt(heightin.value);
+   tilesz = parseInt(tileszin.value);
+   snakebody = [ { x: 0, y: 0 } ];
+   length = 1;
+   direction = "right";
+   snake.style.width    = (tilesz + 4) * width  + "px";
+   snake.style.height   = (tilesz + 4) * height + "px";
+   snake.style.gridTemplateColumns = `repeat(${width},  ${tilesz + 4}px)`;
+   snake.style.gridTemplateRows =    `repeat(${height}, ${tilesz + 4}px)`;
+   for (let i = 0; i < tiledivs.length;)  { tiledivs[0].remove(); }
+   for (let i = 0; i < width * height; i++){
+    let tile = document.createElement("div");
+    tile.className = "tile";
+    tile.style.width =  tilesz;
+    tile.style.height = tilesz;
+    snake.appendChild(tile);}
+   snakebody = [ opentile() ];
+   food = opentile();
+   render(); }
+  function tick(){
+   for (let i = length-1; i > 0; i--) { snakebody[i] = { x: snakebody[i-1].x, y: snakebody[i-1].y }; }
+   if (snakebody[0].x == food.x && snakebody[0].y == food.y) { snakebody[length] = { x: snakebody[length-1].x, y: snakebody[length-1].y }; length++; food = opentile(); }
+   if      (direction == "left")  { snakebody[0].x--; }
+   else if (direction == "up")    { snakebody[0].y--; }
+   else if (direction == "down")  { snakebody[0].y++; }
+   else if (direction == "right") { snakebody[0].x++; }
+   if (snakebody[0].x < 0 || snakebody[0].x == width || snakebody[0].y < 0 || snakebody[0].y == height) { init(); return; }
+   for (let i = 1; i < length; i++) { if (snakebody[0].x == snakebody[i].x && snakebody[0].y == snakebody[i].y) { init(); return; } }
+   render();
+   }
+  function render(){
+   for (let i = 0; i < width*height; i++) { tiledivs[i].style.background = ""; tiledivs[i].style.borderColor = ""; }
+   tiledivs[food.y*width+food.x].style.background = "#208020"; tiledivs[food.y*width+food.x].style.borderColor = "#104010";
+   for (let i = 0; i < length; i++) { let segment = snakebody[i]; tiledivs[segment.y*width+segment.x].style.background = "#606060"; tiledivs[segment.y*width+segment.x].style.borderColor = "#404040";  }
+   tiledivs[snakebody[0].y*width+snakebody[0].x].style.borderColor = "#808080";
+   }
+  function opentile(){
+   let alltiles = [];
+   for (let i = 0; i < height; i++) { for (let j = 0; j < width; j++) { alltiles[i*height+j] = { x: j, y: i } } }
+   snakebody.forEach(x => { alltiles[x.y*width+x.x] = null; });
+   let opentiles = alltiles.filter(x => x != null);
+   return opentiles[Math.floor(Math.random()*opentiles.length)];
+   }
+  function onkeydown(e){
+   if      ((e.code == "ArrowUp"    || e.code == "KeyW") && (length < 2 || snakebody[0].x   != snakebody[1].x && snakebody[0].y-1 != snakebody[1].y)) { direction = "up";    }
+   if      ((e.code == "ArrowLeft"  || e.code == "KeyA") && (length < 2 || snakebody[0].x-1 != snakebody[1].x && snakebody[0].y   != snakebody[1].y)) { direction = "left";  }
+   else if ((e.code == "ArrowDown"  || e.code == "KeyS") && (length < 2 || snakebody[0].x   != snakebody[1].x && snakebody[0].y+1 != snakebody[1].y)) { direction = "down";  }
+   else if ((e.code == "ArrowRight" || e.code == "KeyD") && (length < 2 || snakebody[0].x+1 != snakebody[1].x && snakebody[0].y   != snakebody[1].y)) { direction = "right"; } }
+  </script>
+ </html>
