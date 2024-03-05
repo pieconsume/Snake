@@ -17,7 +17,7 @@
  <body style="background: #000000;">
   <div id="settings" style="top: 10px; left: 10px; width: 54px;  height: 120px; background: #404040; border-color: #202020;">
    <div id="restart" style="background: #802020; border-color: #401010; text-align: center; top: 0px;" onclick="init()">Reset</div>
-   <div id="score"   style="background: #208020; border-color: #104010; text-align: center; top: 24px;">0</div>
+   <div id="score"   style="background: #208020; border-color: #104010; text-align: center; top: 24px;"></div>
    <div id="width"   style="background: #404040; border-color: #282828; text-align: center; top: 48px; text-align: left;">W: <input id="widthin"  class="textbox" type="number" value="20"/></div>
    <div id="height"  style="background: #404040; border-color: #282828; text-align: center; top: 72px; text-align: left;">H: <input id="heightin" class="textbox" type="number" value="20"/></div>
    <div id="tilesz"  style="background: #404040; border-color: #282828; text-align: center; top: 96px; text-align: left;">S: <input id="tileszin"  class="textbox" type="number" value="15"/></div>
@@ -32,6 +32,7 @@
   snake.addEventListener("blur",  () => { clearInterval(tickinterval); });
   init();
   function init(){
+   score.innerText = 0;
    width  = parseInt(widthin.value);
    height = parseInt(heightin.value);
    tilesz = parseInt(tileszin.value);
@@ -54,7 +55,7 @@
    render(); }
   function tick(){
    for (let i = length-1; i > 0; i--) { snakebody[i] = { x: snakebody[i-1].x, y: snakebody[i-1].y }; }
-   if (snakebody[0].x == food.x && snakebody[0].y == food.y) { snakebody[length] = { x: snakebody[length-1].x, y: snakebody[length-1].y }; length++; food = opentile(); }
+   if (snakebody[0].x == food.x && snakebody[0].y == food.y) { snakebody[length] = { x: snakebody[length-1].x, y: snakebody[length-1].y }; length++; score.innerText++; food = opentile(); }
    if      (direction == "left")  { snakebody[0].x--; }
    else if (direction == "up")    { snakebody[0].y--; }
    else if (direction == "down")  { snakebody[0].y++; }
